@@ -11,7 +11,7 @@ export default function Asistencias() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:4000/asistencias')
+    fetch("https://backend-futbol.onrender.com/asistencias")
       .then(res => res.json())
       .then(data => setAsistencias(data));
   }, []);

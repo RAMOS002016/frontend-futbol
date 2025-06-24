@@ -12,14 +12,14 @@ export default function Entrenamientos() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:4000/entrenamientos')
+    fetch("https://backend-futbol.onrender.com/entrenamientos")
       .then(res => res.json())
       .then(data => setEntrenamientos(data));
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:4000/entrenamientos', {
+    const res = await fetch("https://backend-futbol.onrender.com/entrenamientos", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)

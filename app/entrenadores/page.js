@@ -7,14 +7,14 @@ export default function Entrenadores() {
   const [form, setForm] = useState({ nombre: '', especialidad: '', telefono: '' });
 
   useEffect(() => {
-    fetch('http://localhost:4000/entrenadores')
+    fetch("https://backend-futbol.onrender.com/entrenadores")
       .then(res => res.json())
       .then(data => setEntrenadores(data));
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:4000/entrenadores', {
+    const res = await fetch('https://backend-futbol.onrender.com/entrenadores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)

@@ -8,7 +8,7 @@ export default function Jugadores() {
 
   // Cargar lista de jugadores
   useEffect(() => {
-    fetch('http://localhost:4000/jugadores')
+    fetch("https://backend-futbol.onrender.com/jugadores")
       .then(res => res.json())
       .then(data => setJugadores(data));
   }, []);
@@ -16,7 +16,7 @@ export default function Jugadores() {
   // Crear jugador
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:4000/jugadores', {
+    const res = await fetch("https://backend-futbol.onrender.com/jugadores", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
