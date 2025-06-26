@@ -1,37 +1,52 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function Asistencias() {
+export default function AsistenciasPage() {
   const [asistencias, setAsistencias] = useState([]);
-  const [form, setForm] = useState({
-    jugadorId: '',
-    fecha: '',
-    presente: true
-  });
+  const [jugadorId, setJugadorId] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [presente, setPresente] = useState(true);
+  const [error, setError] = useState('');
+  const backendURL = 'https://backend-futbol.onrender.com';
+
+  const fetchAsistencias = async () => {
+    try {
+      const res = await fetch(`${backendURL}/asistencias`);
+      const data = await res.json();
+      setAsistencias(data);
+    } catch (err) {
+      setError('Error al cargar asistencias');
+    }
+  };
 
   useEffect(() => {
-    fetch("https://backend-futbol.onrender.com/asistencias")
-      .then(res => res.json())
-      .then(data => setAsistencias(data));
+    fetchAsistencias();
   }, []);
 
-  const handleSubmit = async (e) => {
+  const registrarAsistencia = async (e) => {
     e.preventDefault();
-    const res = await fetch('http://localhost:4000/asistencias', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        jugadorId: Number(form.jugadorId),
-        fecha: form.fecha,
-        presente: form.presente
-      })
-    });
+    setError('');
 
-    if (res.ok) {
-      const nueva = await res.json();
-      setAsistencias([...asistencias, nueva]);
-      setForm({ jugadorId: '', fecha: '', presente: true });
+    try {
+      const res = await fetch(`${backendURL}/asistencias`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jugadorId: parseInt(jugadorId),
+          fecha,
+          presente,
+        }),
+      });
+
+      if (!res.ok) throw new Error('Error al registrar asistencia');
+
+      setJugadorId('');
+      setFecha('');
+      setPresente(true);
+      fetchAsistencias();
+    } catch (err) {
+      setError(err.message);
     }
   };
 
@@ -39,26 +54,39 @@ export default function Asistencias() {
     <div style={{ padding: '2rem' }}>
       <h1>Registro de Asistencia</h1>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-        <input type="number" placeholder="ID del jugador" value={form.jugadorId}
-          onChange={(e) => setForm({ ...form, jugadorId: e.target.value })} required /> <br />
-        <input type="datetime-local" value={form.fecha}
-          onChange={(e) => setForm({ ...form, fecha: e.target.value })} required /> <br />
+      <form onSubmit={registrarAsistencia} style={{ marginBottom: '2rem' }}>
+        <input
+          type="number"
+          placeholder="ID del Jugador"
+          value={jugadorId}
+          onChange={(e) => setJugadorId(e.target.value)}
+          required
+        />
+        <input
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          required
+        />
         <label>
           <input
             type="checkbox"
-            checked={form.presente}
-            onChange={(e) => setForm({ ...form, presente: e.target.checked })}
-          /> Asistió
-        </label> <br />
-        <button type="submit">Registrar asistencia</button>
+            checked={presente}
+            onChange={(e) => setPresente(e.target.checked)}
+          />{' '}
+          ¿Presente?
+        </label>
+        <br />
+        <button type="submit">Registrar</button>
       </form>
 
-      <h2>Listado</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
       <ul>
-        {asistencias.map((a) => (
-          <li key={a.id}>
-            Jugador ID: {a.jugadorId} – {a.presente ? 'Presente' : 'Ausente'} – {new Date(a.fecha).toLocaleString()}
+        {asistencias.map((asis) => (
+          <li key={asis.id}>
+            Jugador ID: {asis.jugadorId} - Fecha: {new Date(asis.fecha).toLocaleDateString()} -{' '}
+            {asis.presente ? 'Presente' : 'Ausente'}
           </li>
         ))}
       </ul>
