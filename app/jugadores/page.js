@@ -2,30 +2,63 @@
 
 import { useEffect, useState } from 'react';
 
-export default function Jugadores() {
+export default function JugadoresPage() {
   const [jugadores, setJugadores] = useState([]);
-  const [form, setForm] = useState({ nombre: '', edad: '', posicion: '', equipo: '' });
+  const [nombre, setNombre] = useState('');
+  const [edad, setEdad] = useState('');
+  const [posicion, setPosicion] = useState('');
+  const [equipo, setEquipo] = useState('');
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
 
-  // Cargar lista de jugadores
+  const backendURL = 'https://backend-futbol.onrender.com';
+
+  // Obtener jugadores
+  const fetchJugadores = async () => {
+    setCargando(true);
+    try {
+      const res = await fetch(`${backendURL}/jugadores`);
+      const data = await res.json();
+      setJugadores(data);
+    } catch (err) {
+      setError('Error al cargar jugadores');
+    } finally {
+      setCargando(false);
+    }
+  };
+
   useEffect(() => {
-    fetch("https://backend-futbol.onrender.com/jugadores")
-      .then(res => res.json())
-      .then(data => setJugadores(data));
+    fetchJugadores();
   }, []);
 
   // Crear jugador
-  const handleSubmit = async (e) => {
+  const crearJugador = async (e) => {
     e.preventDefault();
-    const res = await fetch("https://backend-futbol.onrender.com/jugadores", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    });
+    try {
+      const res = await fetch(`${backendURL}/jugadores`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, edad, posicion, equipo }),
+      });
+      if (!res.ok) throw new Error('Error al crear jugador');
+      setNombre('');
+      setEdad('');
+      setPosicion('');
+      setEquipo('');
+      fetchJugadores();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
-    if (res.ok) {
-      const nuevo = await res.json();
-      setJugadores([...jugadores, nuevo]);
-      setForm({ nombre: '', edad: '', posicion: '', equipo: '' });
+  // Eliminar jugador
+  const eliminarJugador = async (id) => {
+    if (!confirm('¿Seguro que deseas eliminar este jugador?')) return;
+    try {
+      await fetch(`${backendURL}/jugadores/${id}`, { method: 'DELETE' });
+      fetchJugadores();
+    } catch (err) {
+      setError('Error al eliminar jugador');
     }
   };
 
@@ -33,28 +66,49 @@ export default function Jugadores() {
     <div style={{ padding: '2rem' }}>
       <h1>Gestión de Jugadores</h1>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-        <input type="text" placeholder="Nombre" value={form.nombre}
-          onChange={(e) => setForm({ ...form, nombre: e.target.value })} required /> <br />
-        <input type="number" placeholder="Edad" value={form.edad}
-          onChange={(e) => setForm({ ...form, edad: e.target.value })} required /> <br />
-        <input type="text" placeholder="Posición" value={form.posicion}
-          onChange={(e) => setForm({ ...form, posicion: e.target.value })} required /> <br />
-        <input type="text" placeholder="Equipo" value={form.equipo}
-          onChange={(e) => setForm({ ...form, equipo: e.target.value })} required /> <br />
-        <button type="submit">Registrar jugador</button>
+      <form onSubmit={crearJugador} style={{ marginBottom: '2rem' }}>
+        <input
+          type="text"
+          placeholder="Nombre"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          required
+        />
+        <input
+          type="number"
+          placeholder="Edad"
+          value={edad}
+          onChange={(e) => setEdad(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Posición"
+          value={posicion}
+          onChange={(e) => setPosicion(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Equipo"
+          value={equipo}
+          onChange={(e) => setEquipo(e.target.value)}
+          required
+        />
+        <button type="submit">Agregar</button>
       </form>
 
-      <h2>Listado</h2>
+      {cargando && <p>Cargando jugadores...</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
       <ul>
-        {jugadores.map((j) => (
-          <li key={j.id}>
-            {j.nombre} – {j.posicion} – {j.edad} años – {j.equipo}
+        {jugadores.map((jugador) => (
+          <li key={jugador.id}>
+            {jugador.nombre} - {jugador.posicion} - {jugador.equipo} ({jugador.edad} años)
+            <button onClick={() => eliminarJugador(jugador.id)}>Eliminar</button>
           </li>
         ))}
       </ul>
     </div>
   );
 }
-
-
