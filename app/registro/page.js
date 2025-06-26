@@ -82,4 +82,4 @@ export default function RegistroPage() {
     </div>
   );
 }
-npm run dev
+
