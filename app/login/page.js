@@ -16,11 +16,11 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Paso 1: Login con Firebase
+      // Paso 1: Autenticarse con Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Paso 2: Validar contra tu backend
+      // Paso 2: Consultar al backend si el usuario existe y obtener su rol
       const res = await fetch(`https://backend-futbol.onrender.com/usuarios?email=${email}`);
       const data = await res.json();
 
@@ -35,12 +35,12 @@ export default function LoginPage() {
       localStorage.setItem('userEmail', email);
       localStorage.setItem('userRol', rol);
 
-      // Paso 4: Redireccionar por rol
+      // Paso 4: Redirigir según el rol
       router.push('/redirect');
 
     } catch (err) {
-      console.error("Error al iniciar sesión:", err);
-      setError('Credenciales inválidas o problema con el servidor.');
+      console.error(err);
+      setError('Correo o contraseña inválidos');
     }
   };
 
