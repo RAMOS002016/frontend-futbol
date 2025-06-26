@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,59 +9,62 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const iniciarSesion = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
 
     try {
-      // 🔐 Login con Firebase
+      // Paso 1: Login con Firebase
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Usuario autenticado con Firebase:", user.email);
 
-      // 🔁 Validar en el backend
+      // Paso 2: Validar contra tu backend
       const res = await fetch(`https://backend-futbol.onrender.com/usuarios?email=${email}`);
       const data = await res.json();
 
       if (data.length === 0) {
-        alert("✅ Usuario autenticado, pero no existe en la base de datos");
-      } else {
-        const rol = data[0].rol;
-
-        // 🔒 Guardar datos en localStorage
-        localStorage.setItem('userEmail', email);
-        localStorage.setItem('userRol', rol);
-
-        alert(`Bienvenido ${rol}`);
-        router.push('/usuario'); // Redirigir a la página de usuario
+        alert("Usuario autenticado pero no existe en la base de datos.");
+        return;
       }
-    } catch (error) {
-      console.error("Error al iniciar sesión:", error);
-      alert("Credenciales inválidas o error al conectarse.");
+
+      const rol = data[0].rol;
+
+      // Paso 3: Guardar en localStorage
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userRol', rol);
+
+      // Paso 4: Redireccionar por rol
+      router.push('/redirect');
+
+    } catch (err) {
+      console.error("Error al iniciar sesión:", err);
+      setError('Credenciales inválidas o problema con el servidor.');
     }
   };
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>Login</h1>
-      <form onSubmit={iniciarSesion}>
+      <h1>Iniciar Sesión</h1>
+      <form onSubmit={handleLogin}>
         <input
           type="email"
           placeholder="Correo"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-        /><br />
+        /><br /><br />
         <input
           type="password"
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-        /><br />
-        <button type="submit">Iniciar sesión</button>
+        /><br /><br />
+        <button type="submit">Ingresar</button>
       </form>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 }
-
