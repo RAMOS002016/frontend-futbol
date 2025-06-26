@@ -1,36 +1,94 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
 
 export default function EntrenamientosPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [entrenamientos, setEntrenamientos] = useState([]);
+  const [titulo, setTitulo] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [entrenador, setEntrenador] = useState('');
+  const [error, setError] = useState('');
+  const backendURL = 'https://backend-futbol.onrender.com';
+
+  const fetchEntrenamientos = async () => {
+    try {
+      const res = await fetch(`${backendURL}/entrenamientos`);
+      const data = await res.json();
+      setEntrenamientos(data);
+    } catch (err) {
+      setError('Error al cargar entrenamientos');
+    }
+  };
 
   useEffect(() => {
-    const storedEmail = localStorage.getItem('userEmail');
-    const storedRol = localStorage.getItem('userRol');
+    fetchEntrenamientos();
+  }, []);
 
-    if (!storedEmail || !['admin', 'entrenador'].includes(storedRol)) {
-      router.push('/login');
-    } else {
-      setEmail(storedEmail);
-      setLoading(false);
+  const crearEntrenamiento = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      const res = await fetch(`${backendURL}/entrenamientos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titulo, descripcion, fecha, entrenador }),
+      });
+      if (!res.ok) throw new Error('Error al crear entrenamiento');
+      setTitulo('');
+      setDescripcion('');
+      setFecha('');
+      setEntrenador('');
+      fetchEntrenamientos();
+    } catch (err) {
+      setError(err.message);
     }
-  }, [router]);
-
-  if (loading) return <p style={{ padding: '2rem' }}>Cargando...</p>;
+  };
 
   return (
-    <>
-      <Navbar />
-      <div style={{ padding: '2rem' }}>
-        <h1>Entrenamientos</h1>
-        <p>Bienvenido, {email}</p>
-        <p>Aquí puedes ver y gestionar los entrenamientos programados.</p>
-      </div>
-    </>
+    <div style={{ padding: '2rem' }}>
+      <h1>Gestión de Entrenamientos</h1>
+
+      <form onSubmit={crearEntrenamiento} style={{ marginBottom: '2rem' }}>
+        <input
+          type="text"
+          placeholder="Título"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Descripción"
+          value={descripcion}
+          onChange={(e) => setDescripcion(e.target.value)}
+          required
+        />
+        <input
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Entrenador"
+          value={entrenador}
+          onChange={(e) => setEntrenador(e.target.value)}
+          required
+        />
+        <button type="submit">Agregar</button>
+      </form>
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      <ul>
+        {entrenamientos.map((ent) => (
+          <li key={ent.id}>
+            <strong>{ent.titulo}</strong> - {ent.descripcion} ({new Date(ent.fecha).toLocaleDateString()}) - Entrenador: {ent.entrenador}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
