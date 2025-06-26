@@ -1,4 +1,36 @@
 'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+export default function Navbar() {
+  const pathname = usePathname();
+
+  const linkClasses = (path) =>
+    pathname === path
+      ? 'text-white bg-blue-700 px-3 py-2 rounded-md text-sm font-medium'
+      : 'text-gray-300 hover:bg-blue-500 hover:text-white px-3 py-2 rounded-md text-sm font-medium';
+
+  return (
+    <nav className="fixed top-0 left-0 w-full bg-blue-600 shadow-md z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          <div className="flex items-center space-x-4">
+            <Link href="/" className="text-white font-bold text-xl">Escuela Fútbol</Link>
+            <Link href="/dashboard" className={linkClasses('/dashboard')}>Dashboard</Link>
+            <Link href="/entrenamientos" className={linkClasses('/entrenamientos')}>Entrenamientos</Link>
+            <Link href="/jugadores" className={linkClasses('/jugadores')}>Jugadores</Link>
+          </div>
+          <div className="flex space-x-4">
+            <Link href="/login" className={linkClasses('/login')}>Login</Link>
+            <Link href="/registro" className={linkClasses('/registro')}>Registro</Link>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+'use client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 

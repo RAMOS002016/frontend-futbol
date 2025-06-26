@@ -7,10 +7,10 @@ import { auth } from '@/lib/firebase';
 
 export default function RegistroPage() {
   const router = useRouter();
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [rol, setRol] = useState('jugador'); // valor por defecto
+  const [rol, setRol] = useState('jugador');
   const [error, setError] = useState('');
 
   const handleRegistro = async (e) => {
@@ -18,68 +18,69 @@ export default function RegistroPage() {
     setError('');
 
     try {
-      // Paso 1: Crear cuenta con Firebase
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      await createUserWithEmailAndPassword(auth, email, password);
 
-      // Paso 2: Registrar usuario en tu base de datos
-      const res = await fetch('https://backend-futbol.onrender.com/usuarios', {
+      await fetch('https://backend-futbol.onrender.com/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, email, password, rol })
       });
 
-      if (!res.ok) {
-        throw new Error('Error al registrar en la base de datos');
-      }
-
-      // Paso 3: Guardar sesión local
       localStorage.setItem('userEmail', email);
       localStorage.setItem('userRol', rol);
-
-      // Paso 4: Redirigir según rol
       router.push('/redirect');
-
     } catch (err) {
-      console.error(err);
-      setError('Error al registrar usuario: ' + err.message);
+      setError('Error al registrar: ' + err.message);
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Registro</h1>
-      <form onSubmit={handleRegistro}>
-        <input
-          type="text"
-          placeholder="Nombre"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          required
-        /><br /><br />
-        <input
-          type="email"
-          placeholder="Correo"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        /><br /><br />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        /><br /><br />
-        <select value={rol} onChange={(e) => setRol(e.target.value)}>
-          <option value="jugador">Jugador</option>
-          <option value="entrenador">Entrenador</option>
-          <option value="admin">Administrador</option>
-        </select><br /><br />
-        <button type="submit">Registrar</button>
-      </form>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-purple-200">
+      <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
+        <h1 className="text-3xl font-bold text-center mb-6">Registro</h1>
+        <form onSubmit={handleRegistro} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Nombre completo"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Correo"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Contraseña"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <select
+            className="w-full px-4 py-2 border border-gray-300 rounded-md"
+            value={rol}
+            onChange={(e) => setRol(e.target.value)}
+          >
+            <option value="jugador">Jugador</option>
+            <option value="entrenador">Entrenador</option>
+            <option value="admin">Administrador</option>
+          </select>
+          <button
+            type="submit"
+            className="w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
+          >
+            Registrarse
+          </button>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+        </form>
+      </div>
     </div>
   );
 }
-
